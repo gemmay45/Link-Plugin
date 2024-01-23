@@ -638,7 +638,10 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
       }
     }
 
-    var dataSourceNames = this.datasourceName.split(','), datasources = [];
+    var dataSourceNames = [], datasources = [];
+
+    if (this.datasourceName)
+      dataSourceNames = this.datasourceName.split(',');
   
     for (var x = 0; x < dataSourceNames.length; x++) {
       var currentDatasource = this.form.datasourceMap[dataSourceNames[x]];
