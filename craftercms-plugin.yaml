@@ -1,0 +1,47 @@
+# This file describes a plugin for use in CrafterCMS
+
+# The version of the format for this file
+descriptorVersion: 2
+
+# Describe the plugin
+plugin:
+  type: form-control
+  id: org.craftercms.plugin.excontrol
+  name: Link
+  version:
+    major: 1
+    minor: 0
+    patch: 0
+  description: Link plugins
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  crafterCmsVersions:
+    - major: 4
+      minor: 1
+      patch: 2
+  crafterCmsEditions:
+    - community
+    - enterprise
+  # Option auto-wiring section
+  # installation:
+installation:
+ - type: form-control
+   elementXpath: //control/plugin[pluginId='org.craftercms.plugin.excontrol']
+   element:
+     name: control
+     children:
+       - name: plugin
+         children:
+           - name: pluginId
+             value: org.craftercms.plugin.excontrol
+           - name: type
+             value: control
+           - name: name
+             value: link
+           - name: filename
+             value: main.js
+       - name: icon
+         children:
+           - name: class
+             value: fa-link
