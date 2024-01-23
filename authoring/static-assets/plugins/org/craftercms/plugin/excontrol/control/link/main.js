@@ -522,7 +522,7 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
     var formControlWrap = document.createElement('div');
     formControlWrap.setAttribute('class', 'tox-control-wrap');
-    formControlsHStack.setAttribute('style', 'flex:1; position:relative');
+    formControlWrap.setAttribute('style', 'flex:1; position:relative');
     formControlWrap.setAttribute('aria-disabled', 'false');
     formControlsHStack.appendChild(formControlWrap);  
     
