@@ -36,6 +36,8 @@ CStudioForms.Controls.Link =
     this.hiddenEl = null;
     this.linkText = '';
     this.linkTarget = '';
+    this.taxKey = '';
+    this.taxValue = '';
     this.url = '';
     this.linkTitle = '';
     this.supportedPostFixes = ['_o'];
@@ -143,6 +145,11 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
       valObj.linkText = obj.displayTxtEl.innerHTML;
       valObj.linkTitle = obj.linkTitle;
       valObj.linkTarget = obj.linkTarget;
+      valObj.taxKey = obj.taxKey;
+      valObj.taxValue = obj.taxValue;
+
+      if (valObj.taxKey != "")
+        valObj.linkText = valObj.taxValue;
 
       this.value.push(valObj);
     }
@@ -353,6 +360,9 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
       }
     }
 
+    if (this.readonly)
+      editEl.style.display = 'none';
+
     if (this.value === '_not-set' || this.value === '') {
       this.value = {};
     }
@@ -394,6 +404,11 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
     this.inputEl.setAttribute('data-title', value[0].linkTitle);
     this.inputEl.setAttribute('data-target', value[0].linkTarget);
     this.inputEl.setAttribute('data-text', value[0].linkText);
+    this.inputEl.setAttribute('data-taxKey', value[0].taxKey);
+    this.inputEl.setAttribute('data-taxValue', value[0].taxValue);
+
+    if (value[0].taxKey != "")
+    this.displayTxtEl.innerHTML = value[0].taxValue;
 
     if (value === '') {
       value = [];
@@ -419,7 +434,7 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
     for (var i = 0; i < values.length; i++) {
       item = values[i];
-      strValue += '{ "url": "' + item.url + '", "text": "' + item.linkText + '", "title": "' + item.linkTitle + '", "target": "' + item.linkTarget + '"}';
+      strValue += '{ "url": "' + item.url + '", "text": "' + item.linkText + '", "title": "' + item.linkTitle + '", "target": "' + item.linkTarget + '", "taxKey": "' + item.taxKey + '", "taxValue": "' + item.taxValue + '"}';
       if (i != values.length - 1) {
         strValue += ',';
       }
@@ -607,6 +622,7 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
     labelFromTaxEl.setAttribute('class', 'cstudio-form-control-dropdown');
     labelFromTaxEl.setAttribute('class', this.stylesheet.toxDropdown);
     labelFromTaxEl.disabled = true;
+    labelFromTaxEl.id = 'form-field_labelFromTax';
     dropdownTaxContainerDiv.appendChild(labelFromTaxEl); 
 
     var keyValueList = null;
@@ -618,7 +634,7 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
         if (keyValueList) {
           var blankOption = document.createElement('option');
-          blankOption.setAttribute('class', 'hide');
+          //blankOption.setAttribute('class', 'hide');
           blankOption.value = '';
           labelFromTaxEl.disabled = false;
           labelFromTaxEl.appendChild(blankOption);    
@@ -794,6 +810,23 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
       'optionButton',
       'click', 
       this.createControl, this, true);
+
+    YAHOO.util.Event.addListener(
+      'form-field_labelFromTax',
+      'change',
+      function () {
+        var taxKey = document.getElementById('form-field_labelFromTax').value;
+        var taxSelectEl = document.getElementById('form-field_labelFromTax');
+        var taxValue = (taxSelectEl.selectedIndex != -1) ? taxSelectEl.options[taxSelectEl.selectedIndex].text : "";
+        if (taxKey != "") {
+          var displayTxt = document.getElementById('form-field_linkText');
+          displayTxt.value = taxValue;
+        }
+      },
+      this,
+      true
+    );
+
     YAHOO.util.Event.addListener('dndCancelButton', 'click', this.uploadPopupCancel, this, true);
     YAHOO.util.Event.addListener(
       'dndInsertButton',
@@ -806,12 +839,23 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
         this.displayTxtEl.innerHTML = (displayTxt.value === "") ? "&nbsp;" : displayTxt.value;
 
-        if (this.inputEl.value == "")
-          this.displayTxtEl.innerHTML = "&nbsp;"
+        if (this.inputEl.value == "") {
+          this.displayTxtEl.innerHTML = "&nbsp;";
+          this.taxKey = "";
+          this.taxValue = "";
+        } else {
+          this.taxKey = document.getElementById('form-field_labelFromTax').value;
+          var taxSelectEl = document.getElementById('form-field_labelFromTax');
+          this.taxValue = (taxSelectEl.selectedIndex != -1) ? taxSelectEl.options[taxSelectEl.selectedIndex].text : "";  
+        }
+
         this.linkTitle = document.getElementById('form-field_linkTitle').value;
 
         var state = document.getElementById('form-field_linkTarget').value;
         this.linkTarget = (state == "New") ? "_blank" : "";
+
+        if (this.taxKey != "")
+          this.displayTxtEl.innerHTML = this.taxValue;
 
         this.insertLink_dialog.destroy();
         this._onChangeVal(null, this);
@@ -835,6 +879,12 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
       var titleEl = document.getElementById('form-field_linkTitle');
       titleEl.value = this.value[0].linkTitle;
+
+      var taxEl = document.getElementById('form-field_labelFromTax');
+      taxEl.value = this.value[0].taxKey;
+
+      if (taxEl.value != "") 
+       textEl.value = this.value[0].taxValue;
 
       var targetEl = document.getElementById('form-field_linkTarget');
       targetEl.value = (this.value[0].linkTarget == "_blank") ? "New" : "Self";
