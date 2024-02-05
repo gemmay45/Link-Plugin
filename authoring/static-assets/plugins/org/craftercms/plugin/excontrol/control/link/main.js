@@ -567,11 +567,13 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
     invalIconDiv.innerHTML = '<svg width="24" height="24"><path d="M19.8 18.3c.2.5.3.9 0 1.2-.1.3-.5.5-1 .5H5.2c-.5 0-.9-.2-1-.5-.3-.3-.2-.7 0-1.2L11 4.7l.5-.5.5-.2c.2 0 .3 0 .5.2.2 0 .3.3.5.5l6.8 13.6zM12 18c.3 0 .5-.1.7-.3.2-.2.3-.4.3-.7a1 1 0 00-.3-.7 1 1 0 00-.7-.3 1 1 0 00-.7.3 1 1 0 00-.3.7c0 .3.1.5.3.7.2.2.4.3.7.3zm.7-3l.3-4a1 1 0 00-.3-.7 1 1 0 00-.7-.3 1 1 0 00-.7.3 1 1 0 00-.3.7l.3 4h1.4z" fill-rule="evenodd"></path></svg>';
     controlIconWrapDiv.appendChild(invalIconDiv);  
 
+    'tox-button tox-button--icon tox-button--naked tox-browse-url btn-default yui-button'
+
     var optionBtn = document.createElement('button');
     optionBtn.setAttribute('title', 'URL');
     optionBtn.setAttribute('type', 'button');
-    optionBtn.setAttribute('class', 'tox-button tox-button--icon tox-button--naked tox-browse-url btn-default yui-button');
-    optionBtn.setAttribute('style', 'margin-left: 4px');
+    optionBtn.setAttribute('class', 'tox-button tox-button--icon btn-default yui-button');
+    optionBtn.setAttribute('style', 'margin-left: 4px; padding: 4px; box-shadow: none');
     optionBtn.id = 'optionButton';
     formControlsHStack.appendChild(optionBtn); 
 
@@ -924,7 +926,7 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
       addContainerEl.style.position = 'absolute';
       addContainerEl.style.right = '25px';
-      addContainerEl.style.top = '55px';
+      addContainerEl.style.top = '39px';
 
       var datasourceMap = this.form.datasourceMap;
       var datasourceDef = this.form.definition.datasources;
