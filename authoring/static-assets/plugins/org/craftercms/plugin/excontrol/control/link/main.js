@@ -36,6 +36,8 @@ CStudioForms.Controls.Link =
     this.hiddenEl = null;
     this.linkText = '';
     this.linkTarget = '';
+    this.taxKey = '';
+    this.taxValue = '';
     this.url = '';
     this.linkTitle = '';
     this.supportedPostFixes = ['_o'];
@@ -68,14 +70,39 @@ CStudioForms.Controls.Link =
         'resize': 'none',
         'width': '100%'
        }),
-        toxDialogFooter: emotion.css({
+      toxDialogFooter: emotion.css({
         'align-items': 'center',
         'background-color': '#fff',
         'border-top': '1px solid #ccc',
         'display': 'flex',
         'justify-content': 'space-between',
         'padding': '8px 16px'
-       })
+       }),
+       toxFormControlsHStack : emotion.css({
+        'align-items': 'center',
+        'display': 'flex'
+      }),
+      toxControlWrapStatusIconWrap: emotion.css({
+        'position': 'absolute',
+        'top': '50%',
+        'transform': 'translateY(-50%)',
+        'right': '4px'
+      }),
+      toxDropdown: emotion.css({
+        'border-radius': '3px',
+        'border-width': '1px',
+        'width': '100%',
+        'line-height': '24px',
+        'font-size': '16px',
+        'border-color': '#ccc',
+        'border-style': 'solid',
+        'box-sizing': 'border-box',
+        'min-height': '34px',
+        'padding' : '5px 4.75px'
+      }),
+      toxLabel: emotion.css({
+        'color': 'rgba(34,47,62,.7)',
+      }),
     };
 
     this.stylesheet = stylesheet;
@@ -118,6 +145,11 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
       valObj.linkText = obj.displayTxtEl.innerHTML;
       valObj.linkTitle = obj.linkTitle;
       valObj.linkTarget = obj.linkTarget;
+      valObj.taxKey = obj.taxKey;
+      valObj.taxValue = obj.taxValue;
+
+      if (valObj.taxKey != "")
+        valObj.linkText = valObj.taxValue;
 
       this.value.push(valObj);
     }
@@ -292,8 +324,8 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
     //var txt = document.createTextNode("-");
     //this.displayTxtEl.appendChild(txt)
     inputContainerDivEl.appendChild(displayTxtEl);
-
-    var descriptionEl = document.createElement('span');
+	
+	var descriptionEl = document.createElement('span');
     YAHOO.util.Dom.addClass(descriptionEl, 'description');
     YAHOO.util.Dom.addClass(descriptionEl, 'cstudio-form-field-description');
     descriptionEl.textContent = config.description;
@@ -301,33 +333,6 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
     inputContainerDivEl.appendChild(descriptionEl);
 
-
-    var keyValueList = null;
-    var taxHolder;
-    
-    var cb = {
-      success: function (list) {
-        keyValueList = list;
-
-        if (keyValueList) {
-          for (var j = 0; j < keyValueList.length; j++) {
-            var item = keyValueList[j];
-            var optionEl = document.createElement('option');
-            optionEl.text =
-              item.value ||
-              item.value_f ||
-              item.value_smv ||
-              item.value_imv ||
-              item.value_fmv ||
-              item.value_dtmv ||
-              item.value_htmlmv;
-            optionEl.value = item.key;
-            //_self.controlWidgetContainerEl.inputEl.add(optionEl);
-          }
-        }
-
-      }
-    }
 
     YAHOO.util.Event.on(
       inputEl,
@@ -364,30 +369,12 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
       }
     }
 
+    if (this.readonly)
+      editEl.style.display = 'none';
+
     if (this.value === '_not-set' || this.value === '') {
       this.value = {};
     }
-
-        /****/
-    var dataSourceNames = this.datasourceName.split(','),
-    datasources = [];
-
-  for (var x = 0; x < dataSourceNames.length; x++) {
-    var currentDatasource = this.form.datasourceMap[dataSourceNames[x]];
-    datasources.push(currentDatasource);
-
-    if (currentDatasource && currentDatasource.list && (currentDatasource.list.length > 0)) {
-      currentDatasource.getList(cb);
-    }
-  }
-
-  var datasource = datasources[0];
-  if (datasource) {
-    this.datasource = datasource;
-  } else {
-    this.callback = cb;
-  }
- /****/
   },
 
   addManagedFile(datasource, cb) {
@@ -426,6 +413,11 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
     this.inputEl.setAttribute('data-title', value[0].linkTitle);
     this.inputEl.setAttribute('data-target', value[0].linkTarget);
     this.inputEl.setAttribute('data-text', value[0].linkText);
+    this.inputEl.setAttribute('data-taxKey', value[0].taxKey);
+    this.inputEl.setAttribute('data-taxValue', value[0].taxValue);
+
+    if (value[0].taxKey != "")
+    this.displayTxtEl.innerHTML = value[0].taxValue;
 
     if (value === '') {
       value = [];
@@ -451,7 +443,7 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
     for (var i = 0; i < values.length; i++) {
       item = values[i];
-      strValue += '{ "url": "' + item.url + '", "text": "' + item.linkText + '", "title": "' + item.linkTitle + '", "target": "' + item.linkTarget + '"}';
+      strValue += '{ "url": "' + item.url + '", "text": "' + item.linkText + '", "title": "' + item.linkTitle + '", "target": "' + item.linkTarget + '", "taxKey": "' + item.taxKey + '", "taxValue": "' + item.taxValue + '"}';
       if (i != values.length - 1) {
         strValue += ',';
       }
@@ -539,24 +531,23 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
     var formGroupDiv = document.createElement('div');
     formGroupDiv.setAttribute('class', 'tox-form__group');
-    formGroupDiv.setAttribute('style', 'margin-bottom:4px; box-sizing:border-box');
+    formGroupDiv.setAttribute('style', 'margin-bottom:5px; box-sizing:border-box');
     formGroupDiv.setAttribute('aria-disabled', 'false');
     formDiv.appendChild(formGroupDiv);  
 
     var urlLabel = document.createElement('label');
-    urlLabel.setAttribute('class', 'tox-label');
+    urlLabel.setAttribute('class', this.stylesheet.toxLabel);
     urlLabel.setAttribute('for', 'form-field_url');
     urlLabel.value = "URL";
     formGroupDiv.appendChild(urlLabel);  
   
     var formControlsHStack = document.createElement('div');
-    formControlsHStack.setAttribute('class', 'tox-form__controls-h-stack');
-    formControlsHStack.setAttribute('style', 'align-items:center;display:flex');
+    formControlsHStack.setAttribute('class', this.stylesheet.toxFormControlsHStack);
     formGroupDiv.appendChild(formControlsHStack);  
 
     var formControlWrap = document.createElement('div');
     formControlWrap.setAttribute('class', 'tox-control-wrap');
-    formControlsHStack.setAttribute('style', 'flex:1; position-relative');
+    formControlWrap.setAttribute('style', 'flex:1; position:relative');
     formControlWrap.setAttribute('aria-disabled', 'false');
     formControlsHStack.appendChild(formControlWrap);  
     
@@ -572,7 +563,7 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
     formControlWrap.appendChild(urlField);
 
     var controlIconWrapDiv = document.createElement('div');
-    controlIconWrapDiv.setAttribute('class', 'tox-control-wrap__status-icon-wrap');
+    controlIconWrapDiv.setAttribute('class', this.stylesheet.toxControlWrapStatusIconWrap);
     formControlWrap.appendChild(controlIconWrapDiv);  
 
     var invalIconDiv = document.createElement('div');
@@ -580,15 +571,18 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
     invalIconDiv.setAttribute('class', 'tox-control-wrap__status-icon-wrap');
     invalIconDiv.setAttribute('aria-live', 'polite');
     invalIconDiv.setAttribute('class', 'tox-icon tox-control-wrap__status-icon-invalid');
+    invalIconDiv.setAttribute('style', 'display:none');
     invalIconDiv.id = 'aria-invalid_526777492591703822075552';
     invalIconDiv.innerHTML = '<svg width="24" height="24"><path d="M19.8 18.3c.2.5.3.9 0 1.2-.1.3-.5.5-1 .5H5.2c-.5 0-.9-.2-1-.5-.3-.3-.2-.7 0-1.2L11 4.7l.5-.5.5-.2c.2 0 .3 0 .5.2.2 0 .3.3.5.5l6.8 13.6zM12 18c.3 0 .5-.1.7-.3.2-.2.3-.4.3-.7a1 1 0 00-.3-.7 1 1 0 00-.7-.3 1 1 0 00-.7.3 1 1 0 00-.3.7c0 .3.1.5.3.7.2.2.4.3.7.3zm.7-3l.3-4a1 1 0 00-.3-.7 1 1 0 00-.7-.3 1 1 0 00-.7.3 1 1 0 00-.3.7l.3 4h1.4z" fill-rule="evenodd"></path></svg>';
     controlIconWrapDiv.appendChild(invalIconDiv);  
 
+    'tox-button tox-button--icon tox-button--naked tox-browse-url btn-default yui-button'
+
     var optionBtn = document.createElement('button');
     optionBtn.setAttribute('title', 'URL');
     optionBtn.setAttribute('type', 'button');
-    optionBtn.setAttribute('class', 'tox-button tox-button--icon tox-button--naked tox-browse-url btn-default yui-button');
-    optionBtn.setAttribute('style', 'margin-left: 4px');
+    optionBtn.setAttribute('class', 'tox-button tox-button--icon btn-default yui-button');
+    optionBtn.setAttribute('style', 'margin-left: 4px; padding: 4px; box-shadow: none');
     optionBtn.id = 'optionButton';
     formControlsHStack.appendChild(optionBtn); 
 
@@ -601,27 +595,108 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
     var simpleDiv = document.createElement('div');
     simpleDiv.setAttribute('class', 'tox-form__group');
     simpleDiv.setAttribute('aria-disabled', 'false');
+    simpleDiv.setAttribute('style', 'margin-bottom:5px; box-sizing:border-box');
     formDiv.appendChild(simpleDiv);
 
     linkTextLabel = document.createElement('label');
-    linkTextLabel.setAttribute('class', 'tox-label');
+    linkTextLabel.setAttribute('class', this.stylesheet.toxLabel);
     linkTextLabel.setAttribute('for', 'form-field_linkText');
     linkTextLabel.innerHTML = "Text to display";
     simpleDiv.appendChild(linkTextLabel); 
 
-    var liinkTextField = document.createElement('input');
-    liinkTextField.setAttribute('type', 'text');
-    liinkTextField.setAttribute('class', this.stylesheet.toxTextFieldListboxField); //'tox-textfield'
-    liinkTextField.id = 'form-field_linkText';
-    simpleDiv.appendChild(liinkTextField); 
+    var linkTextField = document.createElement('input');
+    linkTextField.setAttribute('type', 'text');
+    linkTextField.setAttribute('class', this.stylesheet.toxTextFieldListboxField); //'tox-textfield'
+    linkTextField.id = 'form-field_linkText';
+    simpleDiv.appendChild(linkTextField); 
+
+    var simpleDivForSelectGroup = document.createElement('div');
+    simpleDivForSelectGroup.setAttribute('class', 'tox-form__group');
+    simpleDivForSelectGroup.setAttribute('aria-disabled', 'false');
+    formGroupDiv.setAttribute('style', 'margin-bottom:5px; box-sizing:border-box');
+    formDiv.appendChild(simpleDivForSelectGroup);
+
+    var taxTextLabel = document.createElement('label');
+    taxTextLabel.setAttribute('class', this.stylesheet.toxLabel);
+    taxTextLabel.setAttribute('for', 'form-field_linkText');
+    taxTextLabel.innerHTML = "Text from Taxonomy";
+    simpleDivForSelectGroup.appendChild(taxTextLabel); 
+
+    var dropdownTaxContainerDiv = document.createElement('div');
+    dropdownTaxContainerDiv.setAttribute('class', 'cstudio-form-control-dropdown-container');
+    dropdownTaxContainerDiv.setAttribute('style', 'padding-top:0px');
+    simpleDivForSelectGroup.appendChild(dropdownTaxContainerDiv);
+
+    var labelFromTaxEl = document.createElement('select');
+    this.labelFromTaxEl = labelFromTaxEl;
+    labelFromTaxEl.setAttribute('class', 'datum');
+    labelFromTaxEl.setAttribute('class', 'cstudio-form-control-dropdown');
+    labelFromTaxEl.setAttribute('class', this.stylesheet.toxDropdown);
+    labelFromTaxEl.disabled = true;
+    labelFromTaxEl.id = 'form-field_labelFromTax';
+    dropdownTaxContainerDiv.appendChild(labelFromTaxEl); 
+
+    var keyValueList = null;
+    var taxHolder;
+    
+    var cb = {
+      success: function (list) {
+        keyValueList = list;
+
+        if (keyValueList) {
+          var blankOption = document.createElement('option');
+          //blankOption.setAttribute('class', 'hide');
+          blankOption.value = '';
+          labelFromTaxEl.disabled = false;
+          labelFromTaxEl.appendChild(blankOption);    
+
+          for (var j = 0; j < keyValueList.length; j++) {
+            var item = keyValueList[j];
+            var optionEl = document.createElement('option');
+            optionEl.text =
+              item.value ||
+              item.value_f ||
+              item.value_smv ||
+              item.value_imv ||
+              item.value_fmv ||
+              item.value_dtmv ||
+              item.value_htmlmv;
+            optionEl.value = item.key;
+            labelFromTaxEl.appendChild(optionEl);
+          }
+        }
+      }
+    }
+
+    var dataSourceNames = [], datasources = [];
+
+    if (this.datasourceName)
+      dataSourceNames = this.datasourceName.split(',');
+  
+    for (var x = 0; x < dataSourceNames.length; x++) {
+      var currentDatasource = this.form.datasourceMap[dataSourceNames[x]];
+      datasources.push(currentDatasource);
+  
+      if (currentDatasource && currentDatasource.list && (currentDatasource.list.length > 0)) {
+        currentDatasource.getList(cb);
+      }
+    }
+  
+    var datasource = datasources[0];
+    if (datasource) {
+      this.datasource = datasource;
+    } else {
+      this.callback = cb;
+    }
 
     simpleDiv = document.createElement('div');
     simpleDiv.setAttribute('class', 'tox-form__group');
     simpleDiv.setAttribute('aria-disabled', 'false');
+    simpleDiv.setAttribute('style', 'margin-bottom:5px; box-sizing:border-box');
     formDiv.appendChild(simpleDiv);
 
     var linkTitleLabel = document.createElement('label');
-    linkTitleLabel.setAttribute('class', 'tox-label');
+    linkTitleLabel.setAttribute('class', this.stylesheet.toxLabel);
     linkTitleLabel.setAttribute('for', 'form-field_linkTitle');
     linkTitleLabel.innerHTML = "Title";
     simpleDiv.appendChild(linkTitleLabel)
@@ -632,36 +707,13 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
     linkTitleField.id = 'form-field_linkTitle';
     simpleDiv.appendChild(linkTitleField); 
 
-    var simpleDivForSelectGroup = document.createElement('div');
+    simpleDivForSelectGroup = document.createElement('div');
     simpleDivForSelectGroup.setAttribute('class', 'tox-form__group');
     simpleDivForSelectGroup.setAttribute('aria-disabled', 'false');
     formDiv.appendChild(simpleDivForSelectGroup);
 
-    var labelFromTaxEl = document.createElement('select');
-    this.labelFromTaxEl = labelFromTaxEl;
-    YAHOO.util.Dom.addClass(labelFromTaxEl, 'datum');
-    YAHOO.util.Dom.addClass(labelFromTaxEl, 'cstudio-form-control-dropdown');
-    simpleDiv.appendChild(labelFromTaxEl); 
-
-    /*if (keyValueList) {
-      for (var j = 0; j < keyValueList.length; j++) {
-        var item = keyValueList[j];
-        var optionEl = document.createElement('option');
-        optionEl.text =
-          item.value ||
-          item.value_f ||
-          item.value_smv ||
-          item.value_imv ||
-          item.value_fmv ||
-          item.value_dtmv ||
-          item.value_htmlmv;
-        optionEl.value = item.key;
-        _self.controlWidgetContainerEl.inputEl.add(optionEl);
-      }
-    }*/
-
     var linkTargetLabel = document.createElement('label');
-    linkTargetLabel.setAttribute('class', 'tox-label');
+    linkTargetLabel.setAttribute('class', this.stylesheet.toxLabel);
     linkTargetLabel.setAttribute('for', 'form-field_1211068102191703822078254');
     linkTargetLabel.innerHTML = "Open link in...";
     simpleDivForSelectGroup.appendChild(linkTargetLabel)
@@ -672,11 +724,12 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
     var dropdownContainerDiv = document.createElement('div');
     dropdownContainerDiv.setAttribute('class', 'cstudio-form-control-dropdown-container');
+    dropdownContainerDiv.setAttribute('style', 'padding-top:0px; padding-bottom:5px');
     listboxDiv.appendChild(dropdownContainerDiv);
     
     var selectControl = document.createElement('select');
     selectControl.setAttribute('class', 'datum cstudio-form-control-dropdown');
-    selectControl.setAttribute('style', 'border-radius:3px;border-width:1px;width:100%;line-height:24px;font-size:16px;border-color:#ccc;border-style:solid;box-sizing:border-box;min-height:34px;padding:5px 4.75px');
+    selectControl.setAttribute('class', this.stylesheet.toxDropdown);
     selectControl.id = 'form-field_linkTarget';
     dropdownContainerDiv.appendChild(selectControl);     
 
@@ -768,6 +821,23 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
       'optionButton',
       'click', 
       this.createControl, this, true);
+
+    YAHOO.util.Event.addListener(
+      'form-field_labelFromTax',
+      'change',
+      function () {
+        var taxKey = document.getElementById('form-field_labelFromTax').value;
+        var taxSelectEl = document.getElementById('form-field_labelFromTax');
+        var taxValue = (taxSelectEl.selectedIndex != -1) ? taxSelectEl.options[taxSelectEl.selectedIndex].text : "";
+        if (taxKey != "") {
+          var displayTxt = document.getElementById('form-field_linkText');
+          displayTxt.value = taxValue;
+        }
+      },
+      this,
+      true
+    );
+
     YAHOO.util.Event.addListener('dndCancelButton', 'click', this.uploadPopupCancel, this, true);
     YAHOO.util.Event.addListener(
       'dndInsertButton',
@@ -780,12 +850,23 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
         this.displayTxtEl.innerHTML = (displayTxt.value === "") ? "&nbsp;" : displayTxt.value;
 
-        if (this.inputEl.value == "")
-          this.displayTxtEl.innerHTML = "&nbsp;"
+        if (this.inputEl.value == "") {
+          this.displayTxtEl.innerHTML = "&nbsp;";
+          this.taxKey = "";
+          this.taxValue = "";
+        } else {
+          this.taxKey = document.getElementById('form-field_labelFromTax').value;
+          var taxSelectEl = document.getElementById('form-field_labelFromTax');
+          this.taxValue = (taxSelectEl.selectedIndex != -1) ? taxSelectEl.options[taxSelectEl.selectedIndex].text : "";  
+        }
+
         this.linkTitle = document.getElementById('form-field_linkTitle').value;
 
         var state = document.getElementById('form-field_linkTarget').value;
         this.linkTarget = (state == "New") ? "_blank" : "";
+
+        if (this.taxKey != "")
+          this.displayTxtEl.innerHTML = this.taxValue;
 
         this.insertLink_dialog.destroy();
         this._onChangeVal(null, this);
@@ -805,10 +886,16 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
     if (this.value.length > 0) {
       var textEl = document.getElementById('form-field_linkText');
-      textEl.value = this.value[0].linkText;
+      textEl.value = (this.value[0].linkText === "&nbsp;") ? "" : this.value[0].linkText;
 
       var titleEl = document.getElementById('form-field_linkTitle');
       titleEl.value = this.value[0].linkTitle;
+
+      var taxEl = document.getElementById('form-field_labelFromTax');
+      taxEl.value = this.value[0].taxKey;
+
+      if (taxEl.value != "") 
+       textEl.value = this.value[0].taxValue;
 
       var targetEl = document.getElementById('form-field_linkTarget');
       targetEl.value = (this.value[0].linkTarget == "_blank") ? "New" : "Self";
@@ -848,7 +935,7 @@ YAHOO.extend(CStudioForms.Controls.Link, CStudioForms.CStudioFormField, {
 
       addContainerEl.style.position = 'absolute';
       addContainerEl.style.right = '25px';
-      addContainerEl.style.top = '55px';
+      addContainerEl.style.top = '39px';
 
       var datasourceMap = this.form.datasourceMap;
       var datasourceDef = this.form.definition.datasources;
